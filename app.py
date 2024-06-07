@@ -22,7 +22,9 @@ def genres():
 
 @app.get('/catalogue')
 def get_catalogues():
-    return [{"name": "Inferno"}]
+    catalogues = Catalogue.find_all()
+
+    return catalogues
 
 @app.post('/catalogue')
 def save_catalogue(data: CatalogueModel):

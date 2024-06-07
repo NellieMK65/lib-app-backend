@@ -1,4 +1,5 @@
 from db import conn, cursor
+from models.genre import Genre
 
 class Catalogue:
     TABLE_NAME = "catalogues"
@@ -38,6 +39,36 @@ class Catalogue:
             "date_published": self.date_published,
             "created_at": self.created_at
         }
+
+    @classmethod
+    def find_all(cls):
+        sql = """
+            SELECT catalogues.*, genres.* FROM catalogues
+            LEFT JOIN genres ON catalogues.genre_id = genres.id
+            ORDER BY catalogues.created_at ASC
+        """
+
+        rows = cursor.execute(sql).fetchall()
+
+        return [
+            cls.row_to_instance(row).to_dict() for row in rows
+        ]
+
+    @classmethod
+    def row_to_instance(cls, row):
+        if row == None:
+            return None
+
+        catalogue = cls(row[1], row[2], row[3], row[4], row[5], row[6], row[7])
+        catalogue.id = row[0]
+        catalogue.created_at = row[8]
+
+        genre = Genre(row[10])
+        genre.id = row[9]
+
+        catalogue.genre = genre.to_dict()
+
+        return catalogue
 
     @classmethod
     def create_table(cls):
