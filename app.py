@@ -1,15 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from models.catalogue import Genre
+
+from models.genre import Genre
+from models.catalogue import Catalogue
+from validation_models import CatalogueModel
 
 app = FastAPI()
 
 app.add_middleware(CORSMiddleware, allow_origins = ["*"], allow_credentials = True, allow_methods = ["*"], allow_headers = ["*"])
-
-class CatalogueModel(BaseModel):
-    name: str
-    description: str
 
 @app.get("/")
 def read_root():
@@ -28,4 +26,7 @@ def get_catalogues():
 
 @app.post('/catalogue')
 def save_catalogue(data: CatalogueModel):
-    print(data)
+    catalogue = Catalogue(data.name, data.description, data.image, data.booking_fee, data.author, data.genre_id, data.date_published)
+    catalogue.save()
+
+    return catalogue.to_dict()
