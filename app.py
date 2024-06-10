@@ -45,6 +45,9 @@ def book_catalogue(data: BookingModel):
         booking = Booking(data.booking_from, data.booking_to, catalogue.booking_fee, catalogue.id, user.id)
         booking.save()
 
+        catalogue.is_booked = True
+        catalogue.update()
+
         return {"message": "Booking successful"}
     else:
         user = User(data.name, data.phone)

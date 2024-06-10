@@ -4,7 +4,7 @@ from models.genre import Genre
 class Catalogue:
     TABLE_NAME = "catalogues"
 
-    def __init__(self, name, description, image, booking_fee, author, genre_id, date_published):
+    def __init__(self, name, description, image, booking_fee, author, genre_id, date_published, is_booked = False):
         self.id = None
         self.name = name
         self.description = description
@@ -13,6 +13,7 @@ class Catalogue:
         self.author = author
         self.genre_id = genre_id
         self.date_published = date_published
+        self.is_booked = is_booked
         self.created_at = None
         self.genre = None
 
@@ -27,6 +28,17 @@ class Catalogue:
 
         return self
 
+    def update(self):
+        sql = f"""
+            UPDATE {self.TABLE_NAME}
+            SET name = ?, description = ?, image = ?, booking_fee = ?, author = ?, genre_id = ?, date_published = ?, is_booked = ?
+            WHERE id = ?
+        """
+        cursor.execute(sql, (self.name, self.description, self.image, self.booking_fee, self.author, self.genre_id, self.date_published, self.is_booked, self.id))
+        conn.commit()
+
+        return self
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -37,6 +49,7 @@ class Catalogue:
             "author": self.author,
             "genre": self.genre,
             "date_published": self.date_published,
+            "is_booked": self.is_booked,
             "created_at": self.created_at
         }
 
@@ -71,12 +84,17 @@ class Catalogue:
         if row == None:
             return None
 
-        catalogue = cls(row[1], row[2], row[3], row[4], row[5], row[6], row[7])
+        is_booked = False
+
+        if row[9] == 1:
+            is_booked = True
+
+        catalogue = cls(row[1], row[2], row[3], row[4], row[5], row[6], row[7], is_booked)
         catalogue.id = row[0]
         catalogue.created_at = row[8]
 
-        genre = Genre(row[10])
-        genre.id = row[9]
+        genre = Genre(row[11])
+        genre.id = row[10]
 
         catalogue.genre = genre.to_dict()
 
@@ -101,5 +119,12 @@ class Catalogue:
         conn.commit()
         print("Catalogue table created successfully")
 
+    # run this only once
+    @classmethod
+    def alter_table(cls):
+        sql = f"""ALTER TABLE {cls.TABLE_NAME} ADD COLUMN is_booked BOOLEAN DEFAULT false"""
+        cursor.execute(sql)
+        conn.commit()
+        print("Table altered")
 
 Catalogue.create_table()
