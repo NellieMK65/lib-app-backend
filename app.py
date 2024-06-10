@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from models.genre import Genre
 from models.catalogue import Catalogue
-from validation_models import CatalogueModel
+from models.user import User
+from models.booking import Booking
+from validation_models import CatalogueModel, BookingModel
 
 app = FastAPI()
 
@@ -32,3 +34,23 @@ def save_catalogue(data: CatalogueModel):
     catalogue.save()
 
     return catalogue.to_dict()
+
+@app.post('/booking')
+def book_catalogue(data: BookingModel):
+    #  check if user exists
+    user = User.find_one_by_phone(data.phone)
+    catalogue = Catalogue.find_one(data.catalogue_id)
+
+    if user:
+        booking = Booking(data.booking_from, data.booking_to, catalogue.booking_fee, catalogue.id, user.id)
+        booking.save()
+
+        return {"message": "Booking successful"}
+    else:
+        user = User(data.name, data.phone)
+        user.save()
+
+        booking = Booking(data.booking_from, data.booking_to, catalogue.booking_fee, catalogue.id, user.id)
+        booking.save()
+
+        return {"message": "Booking successful"}

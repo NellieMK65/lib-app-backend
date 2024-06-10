@@ -41,6 +41,18 @@ class Catalogue:
         }
 
     @classmethod
+    def find_one(cls, id):
+        sql = """
+            SELECT catalogues.*, genres.* FROM catalogues
+            LEFT JOIN genres ON catalogues.genre_id = genres.id
+            WHERE catalogues.id = ?
+        """
+
+        row = cursor.execute(sql, (id,)).fetchone()
+
+        return cls.row_to_instance(row)
+
+    @classmethod
     def find_all(cls):
         sql = """
             SELECT catalogues.*, genres.* FROM catalogues
